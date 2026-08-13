@@ -28,7 +28,6 @@ export function buildMpesaLoopBizRequest(
     narrative: request.transaction?.description,
   };
 }
-
 /**
  * Placeholder normalization — real M-Pesa format requirements (e.g.
  * 2547XXXXXXXX vs +2547XXXXXXXX) must be confirmed against the actual
@@ -37,3 +36,4 @@ export function buildMpesaLoopBizRequest(
 function normalizeMsisdn(phoneNumber: string): string {
   return phoneNumber.replace(/^\+/, "");
 }
+

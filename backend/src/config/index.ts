@@ -26,24 +26,24 @@ export const config = {
   },
 
   refreshToken: {
-    url: () => required("REFRESH_TOKEN_API_URL"),
-    clientId: () => required("REFRESH_TOKEN_CLIENT_ID"),
-    clientSecret: () => required("REFRESH_TOKEN_CLIENT_SECRET"),
+    url: () => required("https://sandbox.loop.co.ke/gateway/auth/1.0/oauth2/token"),
+    clientId: () => required(process.env.REFRESH_TOKEN_CLIENT_ID),
+    clientSecret: () => required(process.env.REFRESH_TOKEN_CLIENT_SECRET),
   },
 
   mpesaLoopBiz: {
-    url: () => required("MPESA_LOOP_BIZ_API_URL"),
+    url: () => required("https://sandbox.loop.co.ke/gateway/mpesa-prompt/2.0/services/process-request"),
   },
 
   loopLoopBiz: {
-    url: () => required("LOOP_LOOP_BIZ_API_URL"),
+    url: () => required("https://sandbox.loop.co.ke/gateway/loop-prompt/2/services/process-request"),
   },
 
   transactionStatus: {
-    url: () => required("TRANSACTION_STATUS_API_URL"),
+    url: () => required("https://sandbox.loop.co.ke/gateway/transaction-inquiry/1.0.0/services/process-request"),
   },
 
   transactionHistory: {
-    url: () => required("TRANSACTION_HISTORY_API_URL"),
+    url: () => required("https://sandbox.loop.co.ke/gateway/transaction-history/1.0.0/services/process-request"),
   },
 };

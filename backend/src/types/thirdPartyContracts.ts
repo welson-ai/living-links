@@ -11,43 +11,43 @@
 // ---- M-Pesa -> Loop Biz -------------------------------------------------
 
 export interface MpesaLoopBizRequest {
-  amount: number;
-  currency: string;
-  msisdn: string; // phone number, third-party-specific field name
+  amount?: number;
+  currency?: string;
+  msisdn?: string; // phone number, third-party-specific field name
   accountReference?: string;
   narrative?: string;
 }
 
 export interface MpesaLoopBizResponse {
-  transactionId: string;
-  status: string;
+  transactionId?: string;
+  status?: string;
   raw?: unknown;
 }
 
 // ---- Loop -> Loop Biz ----------------------------------------------------
 
 export interface LoopLoopBizRequest {
-  amount: number;
-  currency: string;
-  customerId: string;
+  amount?: number;
+  currency?: string;
+  customerId?: string;
   memo?: string;
 }
 
 export interface LoopLoopBizResponse {
-  transactionId: string;
-  status: string;
+  transactionId?: string;
+  status?: string;
   raw?: unknown;
 }
 
 // ---- Transaction Status ---------------------------------------------------
 
 export interface TransactionStatusRequest {
-  transactionId: string;
+  transactionId?: string;
 }
 
 export interface TransactionStatusResponse {
-  transactionId: string;
-  status: string;
+  transactionId?: string;
+  status?: string;
   updatedAt?: string;
   raw?: unknown;
 }
@@ -55,7 +55,7 @@ export interface TransactionStatusResponse {
 // ---- Transaction History ---------------------------------------------------
 
 export interface TransactionHistoryRequest {
-  customerId: string;
+  customerId?: string;
   from?: string;
   to?: string;
   page?: number;
@@ -63,7 +63,7 @@ export interface TransactionHistoryRequest {
 }
 
 export interface TransactionHistoryResponse {
-  transactions: unknown[];
+  transactions?: unknown[];
   page?: number;
   pageSize?: number;
   total?: number;
@@ -73,15 +73,15 @@ export interface TransactionHistoryResponse {
 // ---- Refresh Token ---------------------------------------------------------
 
 export interface RefreshTokenRequest {
-  clientId: string;
-  clientSecret: string;
-  grantType: "client_credentials" | "refresh_token";
+  clientId?: string;
+  clientSecret?: string;
+  grantType?: "client_credentials" | "refresh_token";
   refreshToken?: string;
 }
 
 export interface RefreshTokenResponse {
-  accessToken: string;
-  expiresIn: number; // seconds
+  accessToken?: string;
+  expiresIn?: number; // seconds
   tokenType?: string;
   refreshToken?: string;
 }
