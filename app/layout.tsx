@@ -5,7 +5,7 @@ import './globals.css'
 export const metadata: Metadata = {
   title: 'Living Links — Payment links with rules',
   description: 'Create payment links that protect both sides of the work.',
-  generator: 'v0.app',
+  generator: 'next.js',
   icons: {
     icon: [
       {
