@@ -14,7 +14,7 @@ export default function Page() {
     <main className="min-h-screen bg-background text-foreground">
       <div className="mx-auto flex min-h-screen max-w-6xl flex-col px-5 sm:px-8">
         <header className="flex items-center justify-between py-6">
-          <Link href="/" className="flex items-center gap-2.5"><span className="grid size-9 place-items-center rounded-xl bg-primary text-primary-foreground"><Link2 className="size-4" /></span><span className="font-semibold tracking-tight">Living Links</span></Link>
+          <Link href="/" className="flex items-center gap-2.5"><span className="grid size-9 place-items-center rounded-xl bg-primary text-primary-foreground"><Link2 className="size-4" /></span><span className="font-semibold tracking-tight">Chequeout</span></Link>
           <nav className="flex items-center gap-3 text-sm"><Link href="/auth/login" className="hidden font-medium text-muted-foreground sm:inline">Log in</Link><Link href="/auth/sign-up" className="rounded-full bg-primary px-4 py-2.5 font-semibold text-primary-foreground">Get started</Link></nav>
         </header>
         <section className="relative flex flex-1 flex-col justify-center overflow-hidden rounded-[2rem] px-6 py-16 sm:px-10 sm:py-24 lg:px-16">
@@ -28,7 +28,7 @@ export default function Page() {
             <div className="mt-20 grid gap-4 border-t border-background/25 pt-8 sm:grid-cols-3">{benefits.map(({ icon: Icon, title, body }) => <div key={title} className="space-y-3"><Icon className="size-5 text-primary" /><h2 className="font-semibold">{title}</h2><p className="text-sm leading-6 text-background/75">{body}</p></div>)}</div>
           </div>
         </section>
-        <footer className="flex flex-col gap-3 border-t border-border py-6 text-sm text-muted-foreground sm:flex-row sm:items-center sm:justify-between"><span>© 2026 Living Links</span><span className="flex items-center gap-2"><CheckCircle2 className="size-4 text-primary" /> Built for trust at checkout</span></footer>
+        <footer className="flex flex-col gap-3 border-t border-border py-6 text-sm text-muted-foreground sm:flex-row sm:items-center sm:justify-between"><span>© 2026 Chequeout</span><span className="flex items-center gap-2"><CheckCircle2 className="size-4 text-primary" /> Built for trust at checkout</span></footer>
       </div>
     </main>
   )

@@ -44,9 +44,17 @@ export function PaymentDashboard() {
   }, [])
 
   useEffect(() => { void loadLinks() }, [loadLinks])
-
-  const held = useMemo(() => links.filter((link) => link.status === 'Held').reduce((sum, link) => sum + Number(link.amount), 0), [links])
+const held = useMemo(() => links.filter((link) => link.status === 'Held').reduce((sum, link) => sum + Number(link.amount), 0), [links])
   const paid = useMemo(() => links.filter((link) => link.status === 'Paid' || link.status === 'Released').reduce((sum, link) => sum + Number(link.amount), 0), [links])
+
+  // Calculate a simple score based on transaction history
+  const creditScore = useMemo(() => {
+    if (links.length === 0) return 700; // Base score
+    const completed = links.filter(l => l.status === 'Released' || l.status === 'Paid').length;
+    const total = links.length;
+    const ratio = completed / total;
+    return Math.min(850, 700 + Math.floor(ratio * 150));
+  }, [links]);
 
   async function createLink(event: React.FormEvent) {
     event.preventDefault()
@@ -54,7 +62,10 @@ export function PaymentDashboard() {
     if (!description.trim() || !numericAmount || numericAmount <= 0) return
     const next = { amount: numericAmount, description: description.trim(), rule, status: 'Held', token: makeToken(description) }
     const { data } = await supabase.from('living_links').insert(next).select().single()
-    if (data) setLinks((current) => [data as LinkRow, ...current])
+    if (data) {
+      setLinks((current) => [data as LinkRow, ...current])
+      setSelected(data as LinkRow) // Open the modal automatically
+    }
     if (!data) return
     setDescription(''); setAmount(''); setShowCreate(false)
   }
@@ -75,13 +86,29 @@ export function PaymentDashboard() {
     <main className="min-h-screen bg-background text-foreground">
       <div className="mx-auto flex min-h-screen w-full max-w-md flex-col px-5 pb-10 pt-6 sm:max-w-2xl sm:px-8">
         <header className="flex items-center justify-between">
-          <div className="flex items-center gap-2.5"><div className="grid size-9 place-items-center rounded-xl bg-primary text-primary-foreground"><Link2 className="size-4" /></div><span className="font-semibold tracking-tight">Living Links</span></div>
+          <div className="flex items-center gap-2.5"><div className="grid size-9 place-items-center rounded-xl bg-primary text-primary-foreground"><Link2 className="size-4" /></div><span className="font-semibold tracking-tight">Chequeout</span></div>
           <button aria-label="Sign out" onClick={async () => { await supabase.auth.signOut(); router.replace('/') }} className="grid size-9 place-items-center rounded-full border border-border bg-card text-sm font-semibold">JD</button>
         </header>
 
         <section className="pt-10"><p className="text-sm text-muted-foreground">Good morning, Jordan</p><div className="mt-2 flex items-end justify-between"><h1 className="text-3xl font-semibold tracking-tight">Your links</h1><button onClick={() => setShowCreate(true)} className="flex items-center gap-2 rounded-full bg-primary px-4 py-2.5 text-sm font-semibold text-primary-foreground shadow-sm"><Plus className="size-4" /> Create</button></div></section>
 
-        <section className="mt-7 grid grid-cols-2 gap-3"><div className="rounded-2xl border border-border bg-card p-4"><div className="mb-5 flex items-center justify-between"><span className="text-xs font-medium text-muted-foreground">Held in links</span><LockKeyhole className="size-4 text-muted-foreground" /></div><p className="text-2xl font-semibold tracking-tight">{money(held)}</p><p className="mt-1 text-xs text-muted-foreground">Across {links.filter((l) => l.status === 'Held').length} links</p></div><div className="rounded-2xl border border-border bg-card p-4"><div className="mb-5 flex items-center justify-between"><span className="text-xs font-medium text-muted-foreground">Total received</span><ArrowDownLeft className="size-4 text-muted-foreground" /></div><p className="text-2xl font-semibold tracking-tight">{money(paid)}</p><p className="mt-1 text-xs text-muted-foreground">This month</p></div></section>
+        <section className="mt-7 grid grid-cols-3 gap-3">
+          <div className="rounded-2xl border border-border bg-card p-4">
+            <div className="mb-5 flex items-center justify-between"><span className="text-xs font-medium text-muted-foreground">Credit Score</span><Sparkles className="size-4 text-primary" /></div>
+            <p className="text-2xl font-semibold tracking-tight">{creditScore}</p>
+            <p className="mt-1 text-xs text-muted-foreground">Based on history</p>
+          </div>
+          <div className="rounded-2xl border border-border bg-card p-4">
+            <div className="mb-5 flex items-center justify-between"><span className="text-xs font-medium text-muted-foreground">Held</span><LockKeyhole className="size-4 text-muted-foreground" /></div>
+            <p className="text-2xl font-semibold tracking-tight">{money(held)}</p>
+            <p className="mt-1 text-xs text-muted-foreground">{links.filter((l) => l.status === 'Held').length} active</p>
+          </div>
+          <div className="rounded-2xl border border-border bg-card p-4">
+            <div className="mb-5 flex items-center justify-between"><span className="text-xs font-medium text-muted-foreground">Received</span><ArrowDownLeft className="size-4 text-muted-foreground" /></div>
+            <p className="text-2xl font-semibold tracking-tight">{money(paid)}</p>
+            <p className="mt-1 text-xs text-muted-foreground">Total</p>
+          </div>
+        </section>
 
         <div className="mt-8 flex gap-6 border-b border-border"><button onClick={() => setActiveTab('links')} className={`border-b-2 pb-3 text-sm font-semibold ${activeTab === 'links' ? 'border-primary text-foreground' : 'border-transparent text-muted-foreground'}`}>Payment links</button><button onClick={() => setActiveTab('activity')} className={`border-b-2 pb-3 text-sm font-semibold ${activeTab === 'activity' ? 'border-primary text-foreground' : 'border-transparent text-muted-foreground'}`}>Activity</button></div>
 
@@ -92,16 +119,53 @@ export function PaymentDashboard() {
 
       {showCreate && <div className="fixed inset-0 z-10 flex items-end justify-center bg-foreground/30 p-3 sm:items-center"><form onSubmit={createLink} className="w-full max-w-md rounded-3xl bg-card p-6 shadow-xl"><div className="mb-6 flex items-center justify-between"><div><p className="text-xs font-medium uppercase tracking-widest text-muted-foreground">New link</p><h2 className="mt-1 text-2xl font-semibold">Request payment</h2></div><button type="button" onClick={() => setShowCreate(false)} className="grid size-9 place-items-center rounded-full bg-muted" aria-label="Close"><X className="size-4" /></button></div><label className="mb-4 block text-sm font-medium">What is this for?<input value={description} onChange={(e) => setDescription(e.target.value)} placeholder="e.g. Website design" className="mt-2 h-12 w-full rounded-xl border border-input bg-background px-4 outline-none ring-ring focus:ring-2" required /></label><label className="mb-4 block text-sm font-medium">Amount<input inputMode="decimal" value={amount} onChange={(e) => setAmount(e.target.value)} placeholder="KES 0.00" className="mt-2 h-12 w-full rounded-xl border border-input bg-background px-4 outline-none ring-ring focus:ring-2" required /></label><label className="mb-6 block text-sm font-medium">Release rule<select value={rule} onChange={(e) => setRule(e.target.value)} className="mt-2 h-12 w-full rounded-xl border border-input bg-background px-4 outline-none ring-ring focus:ring-2"><option>Release when client approves</option><option>Release on handoff</option><option>Split 50/50</option></select></label><button className="flex h-12 w-full items-center justify-center gap-2 rounded-xl bg-primary font-semibold text-primary-foreground">Create payment link <ChevronRight className="size-4" /></button></form></div>}
 
-      {selected && <div className="fixed inset-0 z-10 flex items-end justify-center bg-foreground/30 p-3 sm:items-center"><div className="w-full max-w-md rounded-3xl bg-card p-6 shadow-xl"><div className="flex items-start justify-between"><div><div className="mb-3 flex items-center gap-2 text-xs font-medium text-muted-foreground"><span className={`size-2 rounded-full ${selected.status === 'Held' ? 'bg-green-500' : 'bg-amber-500'}`} /> {selected.status}</div><h2 className="text-2xl font-semibold">{money(Number(selected.amount))}</h2><p className="mt-1 text-muted-foreground">{selected.description}</p></div><button onClick={() => setSelected(null)} className="grid size-9 place-items-center rounded-full bg-muted" aria-label="Close"><X className="size-4" /></button></div><div className="my-6 rounded-2xl bg-muted p-4"><div className="flex items-center gap-3"><div className="grid size-9 place-items-center rounded-xl bg-card"><Sparkles className="size-4" /></div><div><p className="text-sm font-semibold">{selected.rule}</p><p className="mt-1 text-xs text-muted-foreground">Funds stay protected until the condition is met.</p></div></div></div>
-        
-      {selected.status === 'Released' && (
-          <div className="flex flex-col items-center justify-center p-6 border border-border rounded-2xl bg-white mb-6">
-            <p className="text-sm font-semibold mb-3 text-foreground">Verification QR</p>
-            <QRCodeSVG value={`${window.location.origin}/pay/${selected.token}`} size={128} />
+      {selected && (
+        <div className="fixed inset-0 z-10 flex items-end justify-center bg-foreground/30 p-3 sm:items-center">
+          <div className="w-full max-w-md rounded-3xl bg-card p-6 shadow-xl">
+            <div className="flex items-start justify-between">
+              <div>
+                <div className="mb-3 flex items-center gap-2 text-xs font-medium text-muted-foreground">
+                  <span className={`size-2 rounded-full ${selected.status === 'Held' ? 'bg-green-500' : 'bg-amber-500'}`} /> {selected.status}
+                </div>
+                <h2 className="text-2xl font-semibold">{money(Number(selected.amount))}</h2>
+                <p className="mt-1 text-muted-foreground">{selected.description}</p>
+              </div>
+              <button onClick={() => setSelected(null)} className="grid size-9 place-items-center rounded-full bg-muted" aria-label="Close">
+                <X className="size-4" />
+              </button>
+            </div>
+            
+            <div className="my-6 rounded-2xl bg-muted p-4">
+              <div className="flex items-center gap-3">
+                <div className="grid size-9 place-items-center rounded-xl bg-card"><Sparkles className="size-4" /></div>
+                <div>
+                  <p className="text-sm font-semibold">{selected.rule}</p>
+                  <p className="mt-1 text-xs text-muted-foreground">Funds stay protected until the condition is met.</p>
+                </div>
+              </div>
+            </div>
+
+            {selected.status === 'Held' || selected.status === 'Released' ? (
+              <div className="flex flex-col items-center justify-center p-6 border border-border rounded-2xl bg-white mb-6">
+                <p className="text-sm font-semibold mb-3 text-foreground">Verification QR</p>
+                <QRCodeSVG value={`${window.location.origin}/pay/${selected.token}`} size={128} />
+              </div>
+            ) : null}
+            
+            <div className="flex gap-3">
+              <button onClick={() => copyLink(selected)} className="flex h-12 flex-1 items-center justify-center gap-2 rounded-xl border border-border font-semibold">
+                {copied ? <Check className="size-4" /> : <Copy className="size-4" />} {copied ? 'Copied' : 'Copy link'}
+              </button>
+                
+              {selected.status === 'Held' && (
+                <div className="flex flex-1 items-center justify-center rounded-xl bg-muted text-sm font-semibold text-muted-foreground">
+                  Awaiting Buyer Release
+                </div>
+              )}
+            </div>
           </div>
+        </div>
       )}
-        
-      <div className="flex gap-3"><button onClick={() => copyLink(selected)} className="flex h-12 flex-1 items-center justify-center gap-2 rounded-xl border border-border font-semibold">{copied ? <Check className="size-4" /> : <Copy className="size-4" />} {copied ? 'Copied' : 'Copy link'}</button>{selected.status === 'Held' && <button onClick={() => releaseLink(selected)} className="flex h-12 flex-1 items-center justify-center gap-2 rounded-xl bg-primary font-semibold text-primary-foreground"><Send className="size-4" /> Release</button>}</div></div></div>}
     </main>
   )
 }

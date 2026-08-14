@@ -1,9 +1,10 @@
+import { Toaster } from 'sonner'
 import { Analytics } from '@vercel/analytics/next'
 import type { Metadata, Viewport } from 'next'
 import './globals.css'
 
 export const metadata: Metadata = {
-  title: 'Living Links — Payment links with rules',
+  title: 'Chequeout — Payment links with rules',
   description: 'Create payment links that protect both sides of the work.',
   generator: 'next.js',
   icons: {
@@ -42,6 +43,7 @@ export default function RootLayout({
     <html lang="en" className="light">
       <body className="antialiased">
         {children}
+        <Toaster />
         {process.env.NODE_ENV === 'production' && <Analytics />}
       </body>
     </html>
